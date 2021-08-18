@@ -5,6 +5,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,6 +16,10 @@ public class Extractor {
     private static final int MAX_DEPTH = 2;
     private static final int MAX_VISITED_PAGES = 100;
     File file = new File("1.csv");
+    ArrayList<String> words = new ArrayList<>(Arrays.asList("wikipedia", "Elon", "car"));// here you add words which you want to find
+    ArrayList<String> wordRepeat = new ArrayList<>();//here we save result of counting in form "SUCH_WORD was found NUMBER times"
+    ArrayList<String> allInformationToWrite = new ArrayList<>();//this we need to write data to file. One cell contains "title, url, words we looking for"
+
 
     public Extractor() {
         try {
@@ -51,15 +57,13 @@ public class Extractor {
             Connection connection = Jsoup.connect(url);
             Document doc = connection.get();
             if (connection.response().statusCode() == 200) {
-                String wordOne = lookingForWords("wikipedia", doc);
-                String wordTwo = lookingForWords("Elon", doc);
-                String wordThree = lookingForWords("Car", doc);//!!!
-//                System.out.println("Title: " + doc.title());
-//                System.out.println("Link: " + url);
-//                System.out.println(wordOne,wordTwo,wordThree);
-                writeInformation(doc.title(), url, wordOne, wordTwo, wordThree);//!!!
+                for (String word : words) {
+                    wordRepeat.add(lookingForWords(word, doc));
+                }
+                writeInformation(doc.title(), url, wordRepeat);
                 v.add(url);
                 System.out.println(v.size());//!!!
+                wordRepeat.clear();
                 return doc;
             }
             return null;
@@ -84,7 +88,7 @@ public class Extractor {
     }
 
     //responsible for creating document
-    public void writeInformation(String title, String URL, String wordOne, String wordTwo, String wordThree) {//!!!
+    public void writeInformation(String title, String URL, ArrayList<String> toWrite) {//!!!
 //        try (OutputStream outputStream = new FileOutputStream(file, true)) {
 //            outputStream.write(title.getBytes(StandardCharsets.UTF_8));
 //            outputStream.write(URL.getBytes(StandardCharsets.UTF_8));
@@ -98,8 +102,14 @@ public class Extractor {
                     CSVWriter.NO_QUOTE_CHARACTER,
                     CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                     CSVWriter.DEFAULT_LINE_END);
-            String[] data = {"   " + title, "   " + URL, "   " + wordOne, "   " + wordTwo, "   " + wordThree};//!!!
-            writer.writeNext(data);
+            allInformationToWrite.add(title);
+            allInformationToWrite.add(URL);
+            for (String write : toWrite) {
+                allInformationToWrite.add(write);
+            }
+            String[] transfer = allInformationToWrite.toArray(new String[allInformationToWrite.size()]);
+            writer.writeNext(transfer);
+            allInformationToWrite.clear();
         } catch (IOException e) {
             e.printStackTrace();
         }
