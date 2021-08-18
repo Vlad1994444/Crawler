@@ -104,10 +104,10 @@ public class Extractor {
                     CSVWriter.DEFAULT_LINE_END);
             allInformationToWrite.add(title);
             allInformationToWrite.add(URL);
-            for (String write : toWrite) {
-                allInformationToWrite.add(write);
+            for (String wordAndItRepeats : toWrite) {
+                allInformationToWrite.add(wordAndItRepeats);
             }
-            String[] transfer = allInformationToWrite.toArray(new String[allInformationToWrite.size()]);
+            String[] transfer = allInformationToWrite.toArray(new String[0]);
             writer.writeNext(transfer);
             allInformationToWrite.clear();
         } catch (IOException e) {
